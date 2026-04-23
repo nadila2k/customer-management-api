@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Data
@@ -15,6 +16,6 @@ import javax.validation.constraints.Size;
 public class PhoneRequestDto {
 
     @NotBlank(message = "Mobile number is required")
-    @Size(max = 15)
+    @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "Mobile number must be valid (7-15 digits, optional leading +)")
     private String mobileNumber;
 }

@@ -6,24 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "country")
+@Table(name = "customer_family")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Country {
+public class CustomerFamily {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
 
-    @OneToMany(mappedBy = "country", fetch = FetchType.LAZY)
-    private List<City> cities;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "family_member_id", nullable = true)
+    private Customer familyMember;
+
+
 }
