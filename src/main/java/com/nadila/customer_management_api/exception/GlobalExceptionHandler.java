@@ -149,10 +149,9 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
-
+        ex.printStackTrace(); // ← add this temporarily
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.<Void>builder()
                         .status(ResponseStatus.ERROR)

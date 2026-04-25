@@ -29,11 +29,9 @@ public class CustomerRequestDto {
     @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "NIC number must be alphanumeric only")
     private String nicNumber;
 
-    @NotEmpty(message = "At least one phone number is required")
     @Valid
     private List<PhoneRequestDto> phones;
 
-    @NotEmpty(message = "At least one address is required")
     @Valid
     private List<AddressRequestDto> addresses;
 

@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
 @Builder
 public class PhoneRequestDto {
 
-    @NotBlank(message = "Mobile number is required")
+
     @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "Mobile number must be valid (7-15 digits, optional leading +)")
     private String mobileNumber;
 }

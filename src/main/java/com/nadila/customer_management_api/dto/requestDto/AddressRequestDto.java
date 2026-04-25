@@ -15,12 +15,11 @@ import javax.validation.constraints.Size;
 @Builder
 public class AddressRequestDto {
 
+
     @NotBlank(message = "Address line 1 is required")
     private String addressLine1;
 
     private String addressLine2;
-
-    @NotBlank(message = "City name is required")
     @Size(min = 2, max = 100, message = "City name must be between 2 and 100 characters")
     private String cityName;
 
