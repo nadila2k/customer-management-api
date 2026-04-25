@@ -18,6 +18,22 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(
+            ResourceNotFoundException ex) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.<Void>builder()
+                        .status(ResponseStatus.FAIL)
+                        .message(ex.getMessage())
+                        .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicateResource(
             DuplicateResourceException ex) {
@@ -31,14 +47,42 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // ✅ City / Family member not found — 404
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(
-            ResourceNotFoundException ex) {
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(DuplicateFamilyMemberException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateFamilyMember(
+            DuplicateFamilyMemberException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.<Void>builder()
-                        .status(ResponseStatus.FAIL)
+                        .status(ResponseStatus.ERROR)
+                        .message(ex.getMessage())
+                        .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+
+    @ExceptionHandler(SelfFamilyReferenceException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSelfFamilyReference(
+            SelfFamilyReferenceException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Void>builder()
+                        .status(ResponseStatus.ERROR)
+                        .message(ex.getMessage())
+                        .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRequest(
+            InvalidRequestException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.<Void>builder()
+                        .status(ResponseStatus.ERROR)
                         .message(ex.getMessage())
                         .data(null)
                         .timestamp(LocalDateTime.now())
@@ -117,5 +161,4 @@ public class GlobalExceptionHandler {
                         .timestamp(LocalDateTime.now())
                         .build());
     }
-
 }

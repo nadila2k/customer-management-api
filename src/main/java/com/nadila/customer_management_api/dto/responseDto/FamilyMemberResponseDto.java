@@ -16,5 +16,4 @@ public class FamilyMemberResponseDto {
     private Long id;
     private String name;
     private String nicNumber;
-    private LocalDate dateOfBirth;
 }
