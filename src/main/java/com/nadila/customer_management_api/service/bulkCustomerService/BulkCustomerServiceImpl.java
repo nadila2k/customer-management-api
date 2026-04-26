@@ -376,16 +376,20 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
     private String getCellValue(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex);
         if (cell == null) return null;
-        return switch (cell.getCellType()) {
-            case STRING  -> cell.getStringCellValue().trim();
-            case NUMERIC -> DateUtil.isCellDateFormatted(cell)
-                    ? cell.getLocalDateTimeCellValue().toLocalDate().toString()
-                    : String.valueOf((long) cell.getNumericCellValue());
-            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            default      -> null;
-        };
-    }
 
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                return DateUtil.isCellDateFormatted(cell)
+                        ? cell.getLocalDateTimeCellValue().toLocalDate().toString()
+                        : String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
+    }
     private BulkJobResponseDto toResponseDto(BulkJob job) {
 
         ErrorSummary errorSummary = null;
