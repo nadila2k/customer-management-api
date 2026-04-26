@@ -116,7 +116,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setDateOfBirth(req.getDateOfBirth());
         customer.setNicNumber(req.getNicNumber());
 
-        // phones — optional
+
         if (customer.getPhones() != null) customer.getPhones().clear();
         if (req.getPhones() != null && !req.getPhones().isEmpty()) {
             List<CustomerPhone> phones = req.getPhones().stream()

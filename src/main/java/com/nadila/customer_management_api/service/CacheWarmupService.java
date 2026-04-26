@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
 
 @Component
 @RequiredArgsConstructor
-@Order(2)  // ✅ runs after DataInitializer (Order 1)
+@Order(2)
 @Slf4j
 public class CacheWarmupService implements CommandLineRunner {
 
@@ -20,8 +20,8 @@ public class CacheWarmupService implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("🔥 Starting cache warm-up...");
+        log.info("Starting cache warm-up...");
         cityService.warmUpCityCache();
-        log.info("✅ Cache warm-up complete!");
+        log.info(" Cache warm-up complete!");
     }
 }

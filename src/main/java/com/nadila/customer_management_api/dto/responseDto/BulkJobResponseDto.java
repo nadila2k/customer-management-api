@@ -19,12 +19,11 @@ public class BulkJobResponseDto {
     private BulkJobStatus status;
 
     private int totalRecords;
-    private int insertedCount;   // new — rows created
-    private int updatedCount;    // new — rows updated
+    private int insertedCount;
+    private int updatedCount;
     private int failedRecords;
 
-    private ErrorSummary errors; // replaces plain errorDetails String
-
+    private ErrorSummary errors;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

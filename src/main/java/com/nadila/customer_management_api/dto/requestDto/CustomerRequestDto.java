@@ -25,8 +25,10 @@ public class CustomerRequestDto {
     private LocalDate dateOfBirth;
 
     @NotBlank(message = "NIC number is required")
-    @Size(min = 5, max = 20, message = "NIC number must be between 5 and 20 characters")
-//    @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "NIC number must be alphanumeric only")
+    @Pattern(
+            regexp = "^(\\d{9}[vVxX]|\\d{12})$",
+            message = "NIC must be 9 digits + V/X or 12 digits"
+    )
     private String nicNumber;
 
     @Valid

@@ -25,7 +25,7 @@ public class CityServiceImpl implements CityService {
     @Cacheable(value = "cities", key = "#cityName.toLowerCase()")
     @Override
     public City getCityByName(String cityName) {
-        log.info("🔍 DB hit for city: {}", cityName);
+        log.info("DB hit for city: {}", cityName);
         return (City) cityRepository.findByNameIgnoreCase(cityName)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "City not found: " + cityName));
@@ -48,15 +48,15 @@ public class CityServiceImpl implements CityService {
             cities.forEach(city -> {
                 cache.put(city.getName().toLowerCase(), city);
             });
-            log.info("✅ {} cities loaded into cache", cities.size());
+            log.info(" {} cities loaded into cache", cities.size());
         } else {
-            log.warn("⚠️ Cache 'cities' not found!");
+            log.warn("Cache 'cities' not found!");
         }
     }
 
     @CacheEvict(value = "cities", allEntries = true)
     @Override
     public void evictCityCache() {
-        log.info("🗑️ City cache cleared");
+        log.info(" City cache cleared");
     }
 }

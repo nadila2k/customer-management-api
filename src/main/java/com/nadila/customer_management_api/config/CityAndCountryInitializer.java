@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Order(1)
-public class DataInitializer implements CommandLineRunner {
+public class CityAndCountryInitializer implements CommandLineRunner {
 
     private final CountryRepository countryRepository;
     private final CityRepository cityRepository;
@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
 
         saveCities(sriLanka, List.of(
                 "Colombo", "Kandy", "Galle", "Jaffna",
-                "Negombo", "Matara", "Kurunegala", "Anuradhapura"
+                "Negombo", "Matara", "Kurunegala", "Anuradhapura","Gampaha"
         ));
 
         saveCities(india, List.of(

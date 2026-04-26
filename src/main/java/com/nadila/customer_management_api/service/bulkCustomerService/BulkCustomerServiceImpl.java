@@ -39,9 +39,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
     private static final int BATCH_SIZE = 500;
     private static final int MAX_ERRORS = 100;
 
-    // =================================================================
-    // 1. INITIATE UPLOAD  -- returns jobId immediately (non-blocking)
-    // =================================================================
+
     @Override
     public BulkJobResponseDto initiateBulkUpload(MultipartFile file) {
 
@@ -75,9 +73,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         return toResponseDto(job);
     }
 
-    // =================================================================
-    // 2. ASYNC PROCESSING  -- runs in bulkExecutor thread pool
-    // =================================================================
+
     @Async("bulkExecutor")
     public void processAsync(String jobId, Path tempFile) {
 
@@ -100,7 +96,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
             Sheet sheet = workbook.getSheetAt(0);
 
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue;   // skip header row
+                if (row.getRowNum() == 0) continue;
                 totalRecords++;
 
                 try {
@@ -112,7 +108,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                         batchUpdate.add(result.customer());
                     }
 
-                    // Flush create batch
+
                     if (batchCreate.size() == BATCH_SIZE) {
                         saveBatch(batchCreate);
                         insertedCount += BATCH_SIZE;
@@ -123,7 +119,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                         log.info("Job {} -- create batch flushed, inserted: {}", jobId, insertedCount);
                     }
 
-                    // Flush update batch
+
                     if (batchUpdate.size() == BATCH_SIZE) {
                         saveBatch(batchUpdate);
                         updatedCount += BATCH_SIZE;
@@ -143,7 +139,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                 }
             }
 
-            // Save remaining records in last batches
+
             if (!batchCreate.isEmpty()) {
                 saveBatch(batchCreate);
                 insertedCount += batchCreate.size();
@@ -153,7 +149,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                 updatedCount += batchUpdate.size();
             }
 
-            // Final job state
+
             job.setTotalRecords(totalRecords);
             job.setInsertedCount(insertedCount);
             job.setUpdatedCount(updatedCount);
@@ -163,7 +159,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                     ? BulkJobStatus.COMPLETED_WITH_ERRORS
                     : BulkJobStatus.COMPLETED);
 
-            // Persist structured errors as JSON
+
             if (!errors.isEmpty()) {
                 try {
                     job.setErrorDetails(objectMapper.writeValueAsString(errors));
@@ -186,32 +182,10 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         }
     }
 
-    // =================================================================
-    // 3. PARSE ROW  -- upsert by NIC (create if new, update if exists)
-    // =================================================================
 
-    /*
-     * Excel column layout:
-     *
-     *  Col  Field            Required   Format / Notes
-     *  ---  ---------------  --------   -----------------------------------------------
-     *   A   name             YES
-     *   B   dateOfBirth      YES        yyyy-MM-dd
-     *   C   nicNumber        YES        unique upsert key
-     *   D   phones           no         comma-separated    +94771234561,+94771234562
-     *   E   addressLine1s    no         pipe-separated     123 Main St|45 Lake Rd
-     *   F   addressLine2s    no         pipe-separated     Floor 2|null
-     *   G   cityNames        no *       pipe-separated     Colombo|Kandy
-     *   H   countries        no         pipe-separated     Sri Lanka|India
-     *   I   familyMembers    no         comma-sep name|nic Kasun Silva|NIC002LK,Arjun|NIC003LK
-     *
-     *  * cityNames (G) is required when addressLine1s (E) is provided.
-     *  * Use the literal word "null" as a pipe-column placeholder to keep index alignment.
-     *  * Leave any optional column completely blank to skip it.
-     */
     private UpsertResult parseAndUpsertRow(Row row, Set<String> seenNics) {
 
-        // -- Read raw cell values -------------------------------------
+
         String name             = getCellValue(row, 0);
         String dob              = getCellValue(row, 1);
         String nicNumber        = getCellValue(row, 2);
@@ -222,7 +196,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         String countriesRaw     = getCellValue(row, 7);
         String familyMembersRaw = getCellValue(row, 8);
 
-        // -- Mandatory field validation --------------------------------
+
         if (name == null || name.isBlank())
             throw new InvalidRequestException("Name is required");
         if (dob == null || dob.isBlank())
@@ -230,14 +204,13 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         if (nicNumber == null || nicNumber.isBlank())
             throw new InvalidRequestException("NIC is required");
 
-        // In-file duplicate NIC guard
+
         if (!seenNics.add(nicNumber)) {
             throw new DuplicateResourceException(
                     "Duplicate NIC in file: " + nicNumber +
                             " -- this NIC already appeared in an earlier row");
         }
 
-        // -- Parse phones (optional) ----------------------------------
         List<String> phoneList = Collections.emptyList();
         if (phonesRaw != null && !phonesRaw.isBlank()) {
             phoneList = Arrays.stream(phonesRaw.split(","))
@@ -246,7 +219,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                     .toList();
         }
 
-        // -- Parse addresses (optional as a group) --------------------
+
         List<String> line1List   = Collections.emptyList();
         List<String> line2List   = Collections.emptyList();
         List<String> cityList    = Collections.emptyList();
@@ -286,7 +259,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
             }
         }
 
-        // -- Parse family members (optional) --------------------------
+
         List<String> familyNicList = Collections.emptyList();
         if (familyMembersRaw != null && !familyMembersRaw.isBlank()) {
 
@@ -316,7 +289,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                         "Customer cannot be their own family member: " + nicNumber);
         }
 
-        // -- Upsert: find by NIC -> update if found, create if not ----
+
         Optional<Object> existing = customerRepository.findByNicNumber(nicNumber);
         boolean isNew = existing.isEmpty();
         Customer customer = isNew ? new Customer() : (Customer) existing.get();
@@ -325,7 +298,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         customer.setDateOfBirth(LocalDate.parse(dob));
         customer.setNicNumber(nicNumber);
 
-        // -- Phones: REPLACE ALL --------------------------------------
+
         if (customer.getPhones() == null) {
             customer.setPhones(new ArrayList<>());
         } else {
@@ -339,7 +312,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                             .build());
         }
 
-        // -- Addresses: REPLACE ALL -----------------------------------
+
         if (customer.getAddresses() == null) {
             customer.setAddresses(new ArrayList<>());
         } else {
@@ -363,7 +336,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                             .build());
         }
 
-        // -- Family members: REPLACE ALL ------------------------------
+
         if (customer.getFamilyLinks() == null) {
             customer.setFamilyLinks(new ArrayList<>());
         } else {
@@ -384,17 +357,13 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         return new UpsertResult(customer, isNew);
     }
 
-    // =================================================================
-    // 4. BATCH SAVE
-    // =================================================================
+
     @Transactional
     public void saveBatch(List<Customer> batch) {
         customerRepository.saveAll(batch);
     }
 
-    // =================================================================
-    // 5. GET JOB STATUS
-    // =================================================================
+
     @Override
     public BulkJobResponseDto getJobStatus(String jobId) {
         BulkJob job = bulkJobRepository.findByJobId(jobId)
@@ -403,9 +372,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
         return toResponseDto(job);
     }
 
-    // =================================================================
-    // 6. HELPERS
-    // =================================================================
+
     private String getCellValue(Row row, int cellIndex) {
         Cell cell = row.getCell(cellIndex);
         if (cell == null) return null;
@@ -430,7 +397,7 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                         job.getErrorDetails(),
                         new TypeReference<List<BulkErrorEntryDto>>() {});
             } catch (Exception e) {
-                // Fallback: plain-text error (e.g. "Processing failed: ...")
+
                 items.add(new BulkErrorEntryDto(0, job.getErrorDetails()));
             }
 
@@ -458,8 +425,5 @@ public class BulkCustomerServiceImpl implements BulkCustomerService {
                 .build();
     }
 
-    // =================================================================
-    // 7. INNER RECORD
-    // =================================================================
     private record UpsertResult(Customer customer, boolean isNew) {}
 }
