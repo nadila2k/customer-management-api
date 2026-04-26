@@ -7,18 +7,34 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class BulkJobResponseDto {
-    private String jobId;
+
+    private String        jobId;
     private BulkJobStatus status;
+
     private int totalRecords;
-    private int processedRecords;
+    private int insertedCount;   // new — rows created
+    private int updatedCount;    // new — rows updated
     private int failedRecords;
-    private String errorDetails;
+
+    private ErrorSummary errors; // replaces plain errorDetails String
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ErrorSummary {
+        private int                  totalErrors;
+        private String               note;
+        private List<BulkErrorEntryDto> items;
+    }
 }

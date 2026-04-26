@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CustomerPhoneRepository extends JpaRepository<CustomerPhone, Long> {
 
-    void deleteByCustomerId(Long customerId);
+    long countByCustomerId(Long customerId);
 }

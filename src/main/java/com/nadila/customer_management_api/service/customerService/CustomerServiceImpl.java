@@ -203,11 +203,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CustomerResponseDto> findAllCustomers(int page, int size,
-                                                      String sortBy, String sortDirection) {
-
-        List<String> allowedSortFields = List.of(
-                "name", "dateOfBirth", "nicNumber", "createdAt", "updatedAt");
+    public Page<CustomerResponseDto> getCustomersPaginated(int page, int size,
+                                                           String sortBy, String sortDirection) {
+        List<String> allowedSortFields = List.of("name", "dateOfBirth", "nicNumber", "createdAt", "updatedAt");
 
         if (!allowedSortFields.contains(sortBy)) {
             throw new InvalidRequestException(
@@ -231,6 +229,18 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Customer not found with ID: " + customerId));
         return toDetailResponseDto(customer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponseDto> searchCustomerByNameOrNic(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            throw new InvalidRequestException("Search keyword cannot be empty");
+        }
+        return customerRepository.searchByNameOrNic(keyword.trim())
+                .stream()
+                .map(this::toResponseDto)
+                .toList();
     }
 
 

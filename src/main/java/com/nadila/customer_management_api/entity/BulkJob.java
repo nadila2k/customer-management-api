@@ -38,6 +38,12 @@ public class BulkJob {
     @Column(name = "processed_records")
     private int processedRecords;
 
+    @Column(name = "inserted_count")
+    private int insertedCount;
+
+    @Column(name = "updated_count")
+    private int updatedCount;
+
     @Column(name = "failed_records")
     private int failedRecords;
 

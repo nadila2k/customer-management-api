@@ -7,6 +7,7 @@ import com.nadila.customer_management_api.dto.responseDto.CustomerResponseDto;
 import com.nadila.customer_management_api.enums.ResponseStatus;
 import com.nadila.customer_management_api.service.customerService.CustomerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
@@ -39,7 +40,7 @@ public class CustomerController {
                         .build());
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<CustomerResponseDto>>> getAllCustomers() {
 
         List<CustomerResponseDto> customers = customerService.findAllCustomers();
@@ -102,5 +103,43 @@ public class CustomerController {
                         .build()
         );
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<CustomerResponseDto>>> searchCustomers(
+            @RequestParam String keyword) {
+
+        List<CustomerResponseDto> result = customerService.searchCustomerByNameOrNic(keyword);
+
+        return ResponseEntity.ok(
+                ApiResponse.<List<CustomerResponseDto>>builder()
+                        .status(ResponseStatus.SUCCESS)
+                        .message("Search results fetched successfully")
+                        .data(result)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+
+
+    @GetMapping("/paginated")
+    public ResponseEntity<ApiResponse<Page<CustomerResponseDto>>> getCustomers(
+            @RequestParam(defaultValue = "0")        int page,
+            @RequestParam(defaultValue = "10")       int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc")     String sortDirection) {
+
+        Page<CustomerResponseDto> customers = customerService.getCustomersPaginated(
+                page, size, sortBy, sortDirection);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Page<CustomerResponseDto>>builder()
+                        .status(ResponseStatus.SUCCESS)
+                        .message("Customers fetched successfully")
+                        .data(customers)
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
+    }
+
 
 }
