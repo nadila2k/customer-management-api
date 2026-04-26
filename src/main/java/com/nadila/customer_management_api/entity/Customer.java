@@ -50,7 +50,7 @@ public class Customer {
     private List<CustomerFamily> familyLinks;
 
 
-    @OneToMany(mappedBy = "familyMember", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "familyMember", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<CustomerFamily> familyMemberLinks;
 
     @CreatedDate
